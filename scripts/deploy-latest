@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: nuon demo deploy-latest <install_id> <components_path>"
+}
+
+if [ $# -lt 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+  usage
+  exit 1
+fi
+
+install_id="$1"
+path="$2"
+
+auth_header="Bearer $NUON_API_TOKEN"
+host="$NUON_API_URL"
+org_id="$NUON_ORG_ID"
+
+deploy_latest_build() {
+  component_name="$1"
+
+  echo "deploying $component_name"
+
+  url="$host/v1/components/$component_name"
+  echo " > url: $url"
+  component_id=$(curl -sf "$url" -H "Authorization: $auth_header" -H "X-Nuon-Org-ID: $org_id" | jq -r '.id')
+
+  url="$host/v1/components/$component_id/builds/latest"
+  echo " > url: $url"
+  build_id=$(curl -sf "$url" -H "Authorization: $auth_header" -H "X-Nuon-Org-ID: $org_id" | jq -r '.id')
+
+  data=$(jq --null-input --arg build_id_ "$build_id" '{"build_id": $build_id_}')
+
+  url="$host/v1/installs/$install_id/deploys"
+  echo " > url: $url"
+  curl -sf -X POST "$url" -H "Authorization: $auth_header" -H "X-Nuon-Org-ID: $org_id" -d "$data" | jq -r '.id'
+}
+
+echo "Deploying components"
+echo " > path: $path"
+echo " > host: $host"
+echo " > install: $install_id"
+echo " > org: $org_id"
+
+for file in "$path"/*.toml; do
+  [ -f "$file" ] || continue
+  component_name=$(toml get "$file" -r name)
+  gum confirm "Deploy Component: $component_name?" && deploy_latest_build "$component_name"
+done

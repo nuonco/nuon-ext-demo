@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -z "${NUON_API_TOKEN:-}" ] || [ -z "${NUON_API_URL:-}" ]; then
+  echo "Error: NUON_API_TOKEN and NUON_API_URL must be set" >&2
+  exit 1
+fi
+
+curl -sf -H "Authorization: Bearer $NUON_API_TOKEN" "$NUON_API_URL/v1/current-user"

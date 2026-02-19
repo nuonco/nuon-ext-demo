@@ -1,0 +1,7 @@
+[extension]
+name = "demo"
+description = "Demo extension with bash script entrypoint"
+
+[extension.auth]
+requires_token = true
+requires_org = true
