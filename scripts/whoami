@@ -6,4 +6,4 @@ if [ -z "${NUON_API_TOKEN:-}" ] || [ -z "${NUON_API_URL:-}" ]; then
   exit 1
 fi
 
-curl -sf -H "Authorization: Bearer $NUON_API_TOKEN" "$NUON_API_URL/v1/current-user"
+curl -f -H "Authorization: Bearer $NUON_API_TOKEN" "$NUON_API_URL/v1/account"
